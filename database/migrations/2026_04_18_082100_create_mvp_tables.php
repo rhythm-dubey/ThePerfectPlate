@@ -76,7 +76,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         Schema::create('menu_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
@@ -106,12 +105,12 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50)->unique();
             $table->string('slug', 50)->unique();
-            $table->string('color', 20)->nullable(); // for UI: primary, success, warning, danger
+            $table->string('color', 20)->nullable();
             $table->integer('display_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
-        
+
         Schema::create('payment_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->unique();
@@ -122,21 +121,19 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
-
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_number', 50)->unique();
             $table->foreignId('customer_id')->constrained('users')->onDelete('restrict');
             $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
+            $table->foreignId('order_status_id')->constrained('order_statuses')->onDelete('restrict');
+            $table->foreignId('payment_status_id')->constrained('payment_statuses')->onDelete('restrict');
             $table->date('order_date');
             $table->decimal('subtotal', 12, 2)->default(0);
             $table->decimal('tax_amount', 12, 2)->default(0);
             $table->decimal('discount_amount', 12, 2)->default(0);
             $table->decimal('delivery_charges', 10, 2)->default(0);
             $table->decimal('total_amount', 12, 2)->default(0);
-            $table->enum('order_status', ['draft', 'confirmed', 'preparing', 'delivered', 'cancelled'])->default('draft');
-            $table->enum('payment_status', ['pending', 'partial', 'paid', 'refunded'])->default('pending');
             $table->text('special_instructions')->nullable();
             $table->text('cancellation_reason')->nullable();
             $table->timestamps();
@@ -144,8 +141,9 @@ return new class extends Migration
             $table->index('order_number');
             $table->index('order_date');
             $table->index('customer_id');
+            $table->index('order_status_id');
+            $table->index('payment_status_id');
         });
-
 
         Schema::create('order_events', function (Blueprint $table) {
             $table->id();
