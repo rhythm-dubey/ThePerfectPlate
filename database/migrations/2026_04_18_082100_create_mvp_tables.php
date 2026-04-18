@@ -86,6 +86,14 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('dietary_tags', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 50)->unique();
+            $table->string('slug', 50)->unique();
+            $table->string('color', 20)->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
 
         Schema::create('menu_items', function (Blueprint $table) {
             $table->id();
@@ -97,8 +105,16 @@ return new class extends Migration
             $table->decimal('base_price', 10, 2)->default(0);
             $table->boolean('is_available')->default(true);
             $table->boolean('is_vegetarian')->default(true);
-            $table->json('dietary_tags')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('menu_item_dietary_tags', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('menu_item_id')->constrained('menu_items')->onDelete('cascade');
+            $table->foreignId('dietary_tag_id')->constrained('dietary_tags')->onDelete('cascade');
+            $table->timestamps();
+
+            $table->unique(['menu_item_id', 'dietary_tag_id']);
         });
 
         Schema::create('order_statuses', function (Blueprint $table) {
@@ -170,7 +186,6 @@ return new class extends Migration
             $table->decimal('unit_price', 10, 2);
             $table->decimal('total_price', 12, 2);
             $table->text('special_instructions')->nullable();
-            $table->json('customizations')->nullable();
             $table->timestamps();
             
             $table->index('order_event_id');
@@ -186,7 +201,11 @@ return new class extends Migration
         Schema::dropIfExists('order_event_items');
         Schema::dropIfExists('order_events');
         Schema::dropIfExists('orders');
+        Schema::dropIfExists('order_statuses');
+        Schema::dropIfExists('payment_statuses');
+        Schema::dropIfExists('menu_item_dietary_tags');
         Schema::dropIfExists('menu_items');
+        Schema::dropIfExists('dietary_tags');
         Schema::dropIfExists('menu_categories');
         Schema::dropIfExists('events');
         Schema::dropIfExists('role_user');
